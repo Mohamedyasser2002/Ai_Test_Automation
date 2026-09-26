@@ -1,0 +1,200 @@
+services:
+
+  # ============================================================
+  # Main FastAPI Application
+  # ============================================================
+  ai-test-automation:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+
+    container_name: ai-test-automation
+
+    ports:
+      - "8080:8080"
+
+    env_file:
+      - .env
+
+    environment:
+      # --------------------------------------------------------
+      # Database
+      # --------------------------------------------------------
+      DATABASE_URL: postgresql+psycopg://testuser:testpass@postgres:5432/testautomation
+
+      # --------------------------------------------------------
+      # Redis
+      # --------------------------------------------------------
+      REDIS_URL: redis://redis:6379/0
+
+      # --------------------------------------------------------
+      # Playwright
+      # --------------------------------------------------------
+      PLAYWRIGHT_BROWSERS_PATH: /root/.cache/ms-playwright
+
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./data:/app/data
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+      redis:
+        condition: service_healthy
+
+    networks:
+      - test-automation-net
+
+    restart: unless-stopped
+
+    init: true
+
+    # Chromium can require additional shared memory
+    ipc: host
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+
+  # ============================================================
+  # Redis
+  # ============================================================
+  redis:
+    image: redis:7-alpine
+
+    container_name: test-automation-redis
+
+    command:
+      - redis-server
+      - --appendonly
+      - yes
+
+    volumes:
+      - redis-data:/data
+
+    networks:
+      - test-automation-net
+
+    restart: unless-stopped
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "redis-cli",
+          "ping"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+
+  # ============================================================
+  # PostgreSQL
+  # ============================================================
+  postgres:
+    image: postgres:16-alpine
+
+    container_name: test-automation-db
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-testuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-testpass}
+      POSTGRES_DB: ${POSTGRES_DB:-testautomation}
+
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+    networks:
+      - test-automation-net
+
+    restart: unless-stopped
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-testuser} -d ${POSTGRES_DB:-testautomation}"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+
+  # ============================================================
+  # Prometheus
+  # ============================================================
+  prometheus:
+    image: prom/prometheus:latest
+
+    container_name: test-automation-prometheus
+
+    ports:
+      - "9090:9090"
+
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+    networks:
+      - test-automation-net
+
+    restart: unless-stopped
+
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:9090/-/healthy"
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+
+# ============================================================
+# Persistent Volumes
+# ============================================================
+volumes:
+
+  redis-data:
+    name: ai-test-automation-redis-data
+
+  postgres-data:
+    name: ai-test-automation-postgres-data
+
+  prometheus-data:
+    name: ai-test-automation-prometheus-data
+
+
+# ============================================================
+# Network
+# ============================================================
+networks:
+
+  test-automation-net:
+    name: ai-test-automation-network
+    driver: bridge

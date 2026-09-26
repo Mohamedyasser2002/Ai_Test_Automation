@@ -1,0 +1,7 @@
+content = """global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'ai-test-automation'
+    static_configs:
+      - targets: ['ai-test-automation:8080']
