@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Test Automation Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #06121e;
+            --bg-card: #0f1d2d;
+            --bg-panel: #12263b;
+            --surface: rgba(15, 29, 45, 0.95);
+            --surface-strong: #0b1726;
+            --text: #edf4ff;
+            --muted: #96a9c5;
+            --border: rgba(148, 163, 184, 0.18);
+            --primary: #5aa9ff;
+            --primary-strong: #2b6ee6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #f87171;
+            --purple: #a78bfa;
+            --shadow: rgba(3, 7, 18, 0.38);
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #04111d 0%, #0a1727 100%);
+            color: var(--text);
+        }
+
+        body {
+            padding-bottom: 48px;
+        }
+
+        .container {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 32px 24px 48px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding: 8px 0 24px;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2rem, 3vw, 3rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: #edf6ff;
+        }
+
+        .subtitle {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            background: rgba(34, 197, 94, 0.08);
+            color: var(--success);
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.8);
+        }
+
+        .secondary-btn,
+        .action-btn,
+        .btn-approve,
+        .btn-reject {
+            border-radius: 10px;
+            padding: 11px 16px;
+            border: 1px solid var(--border);
+            background: rgba(15, 29, 45, 0.9);
+            color: var(--text);
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s ease, opacity 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .secondary-btn:hover,
+        .action-btn:hover {
+            transform: translateY(-1px);
+            border-color: rgba(90, 169, 255, 0.5);
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+            border: none;
+        }
+
+        .btn-approve {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.5);
+            color: #4ade80;
+            padding: 7px 14px;
+            font-size: 0.82rem;
+        }
+
+        .btn-approve:hover {
+            background: rgba(34, 197, 94, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-reject {
+            background: rgba(248, 113, 113, 0.2);
+            border-color: rgba(248, 113, 113, 0.5);
+            color: #fca5a5;
+            padding: 7px 14px;
+            font-size: 0.82rem;
+        }
+
+        .btn-reject:hover {
+            background: rgba(248, 113, 113, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Agent Stepper */
+        .stepper-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .stepper-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stepper-steps {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            position: relative;
+        }
+
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 6px;
+            opacity: 0.45;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active {
+            opacity: 1;
+        }
+
+        .step-item.completed {
+            opacity: 0.9;
+        }
+
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active .step-circle {
+            border-color: var(--primary);
+            background: rgba(90, 169, 255, 0.2);
+            color: var(--primary);
+            box-shadow: 0 0 16px rgba(90, 169, 255, 0.6);
+            animation: pulse-glow 1.8s infinite;
+        }
+
+        .step-item.completed .step-circle {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .step-label {
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 4px rgba(90, 169, 255, 0.4); }
+            50% { box-shadow: 0 0 18px rgba(90, 169, 255, 0.8); }
+            100% { box-shadow: 0 0 4px rgba(90, 169, 255, 0.4); }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 18px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 18px 16px;
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .card-label {
+            display: block;
+            color: var(--muted);
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .metric {
+            font-size: clamp(1.9rem, 2.4vw, 2.7rem);
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            line-height: 1;
+        }
+
+        .metric.success { color: var(--success); }
+        .metric.danger { color: var(--danger); }
+        .metric.warning { color: var(--warning); }
+        .metric.purple { color: var(--purple); }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px 20px;
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .panel-title {
+            font-size: 1.08rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .stack {
+            display: grid;
+            gap: 18px;
+        }
+
+        .field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .field label {
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        textarea {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(6, 18, 30, 0.9);
+            color: var(--text);
+            padding: 12px 13px;
+            resize: vertical;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            line-height: 1.55;
+        }
+
+        textarea::placeholder {
+            color: rgba(150, 169, 197, 0.75);
+        }
+
+        .inline-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .section-note {
+            color: var(--muted);
+            font-size: 0.8rem;
+            margin-top: -4px;
+        }
+
+        .summary-box {
+            background: rgba(6, 18, 30, 0.9);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            min-height: 120px;
+        }
+
+        .summary-box h3 {
+            margin: 0 0 10px;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+
+        .summary-box p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        #log-stream {
+            height: 250px;
+            overflow-y: auto;
+            border-radius: 12px;
+            background: rgba(6, 18, 30, 0.9);
+            border: 1px solid var(--border);
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.7;
+        }
+
+        .log-entry {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            padding: 4px 0;
+        }
+
+        .log-time { color: var(--muted); margin-right: 10px; }
+        .log-info { color: var(--primary); }
+        .log-success { color: var(--success); }
+        .log-error { color: var(--danger); }
+
+        /* Human Review Section */
+        .human-review-panel {
+            background: rgba(167, 139, 250, 0.06);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-top: 20px;
+        }
+
+        .human-review-card {
+            background: rgba(6, 18, 30, 0.95);
+            border: 1px solid rgba(167, 139, 250, 0.25);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .review-title {
+            font-weight: 700;
+            color: #d8b4fe;
+        }
+
+        .code-diff-box {
+            background: #040d16;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 200px;
+        }
+
+        .diff-added { color: #4ade80; }
+        .diff-removed { color: #fca5a5; }
+
+        .result-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .result-item {
+            background: rgba(6, 18, 30, 0.9);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+
+        .result-item:hover {
+            background: rgba(15, 29, 45, 0.95);
+            border-color: rgba(90, 169, 255, 0.3);
+        }
+
+        .result-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-item.passed { border-left-color: var(--success); }
+        .result-item.failed { border-left-color: var(--danger); }
+        .result-item.healed { border-left-color: var(--warning); }
+        .result-item.needs_review { border-left-color: var(--purple); }
+
+        .result-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .result-meta {
+            color: var(--muted);
+            font-size: 0.76rem;
+        }
+
+        .badge {
+            display: inline-block;
+            min-width: 92px;
+            text-align: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .badge.passed { background: rgba(34,197,94,0.12); color: var(--success); }
+        .badge.failed { background: rgba(248,113,113,0.12); color: var(--danger); }
+        .badge.healed { background: rgba(245,158,11,0.12); color: var(--warning); }
+        .badge.needs_review { background: rgba(167,139,250,0.12); color: var(--purple); }
+
+        .test-details {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            display: none;
+            grid-gap: 12px;
+        }
+
+        .test-details.open {
+            display: grid;
+        }
+
+        .code-view {
+            background: #030a12;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: #7dd3fc;
+            overflow-x: auto;
+            max-height: 250px;
+        }
+
+        .empty-state {
+            color: var(--muted);
+            line-height: 1.6;
+            padding: 18px 2px;
+        }
+
+        /* Modal styling for Run History */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(4, 13, 23, 0.85);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 24px;
+            width: 90%;
+            max-width: 750px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 16px 40px var(--shadow);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-size: 1.4rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 980px) {
+            .workspace { grid-template-columns: 1fr; }
+            .stepper-steps { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        }
+
+        @media (max-width: 720px) {
+            .topbar, .panel-header { flex-direction: column; align-items: flex-start; }
+            .inline-grid { grid-template-columns: 1fr; }
+            .stepper-steps { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar">
+            <div>
+                <h1>AI Test Automation Center</h1>
+                <div class="subtitle">Senior QA intelligence for product validation, failure analysis, and automated healing.</div>
+            </div>
+
+            <div class="toolbar">
+                <div class="status-pill" id="ws-status">
+                    <span class="dot"></span>
+                    <span>Live</span>
+                </div>
+                <button class="secondary-btn" type="button" onclick="loadDemoData()">Load sample</button>
+                <button class="secondary-btn" type="button" onclick="clearInputs()">Reset</button>
+                <button class="secondary-btn" type="button" onclick="openHistoryModal()">Run History</button>
+                <button class="secondary-btn" type="button" onclick="exportReport()">Export Report</button>
+                <button class="action-btn" type="button" onclick="triggerRun()">Run validation</button>
+            </div>
+        </div>
+
+        <!-- 6-Stage Agent Workflow Stepper Bar -->
+        <div class="stepper-container">
+            <div class="stepper-title">
+                <span>Agent Workflow Progression</span>
+                <span id="active-step-name" style="color: var(--primary); text-transform: none;">Idle</span>
+            </div>
+            <div class="stepper-steps">
+                <div class="step-item" id="step-init">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Init</div>
+                </div>
+                <div class="step-item" id="step-generate">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Generate</div>
+                </div>
+                <div class="step-item" id="step-execute">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Execute</div>
+                </div>
+                <div class="step-item" id="step-analyze">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">Analyze</div>
+                </div>
+                <div class="step-item" id="step-heal">
+                    <div class="step-circle">5</div>
+                    <div class="step-label">Self-Heal</div>
+                </div>
+                <div class="step-item" id="step-report">
+                    <div class="step-circle">6</div>
+                    <div class="step-label">Report</div>
+                </div>
+            </div>
+        </div>
+
+        <section class="stats">
+            <div class="card">
+                <span class="card-label">Total checks</span>
+                <div class="metric" id="total-tests">0</div>
+            </div>
+            <div class="card">
+                <span class="card-label">Passed</span>
+                <div class="metric success" id="passed-tests">0</div>
+            </div>
+            <div class="card">
+                <span class="card-label">Failed</span>
+                <div class="metric danger" id="failed-tests">0</div>
+            </div>
+            <div class="card">
+                <span class="card-label">Recovered</span>
+                <div class="metric warning" id="healed-tests">0</div>
+            </div>
+            <div class="card">
+                <span class="card-label">Needs review</span>
+                <div class="metric purple" id="review-tests">0</div>
+            </div>
+            <div class="card">
+                <span class="card-label">Success rate</span>
+                <div class="metric" id="pass-rate">0%</div>
+            </div>
+        </section>
+
+        <div class="workspace">
+            <section class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Project inputs</div>
+                </div>
+
+                <div class="stack">
+                    <div class="field">
+                        <label for="requirements">Requirements</label>
+                        <textarea id="requirements" rows="5" placeholder="Describe the feature, acceptance criteria, and expected behavior."></textarea>
+                    </div>
+
+                    <div class="field">
+                        <label for="source-code">Source code</label>
+                        <textarea id="source-code" rows="11" placeholder='Paste JSON mapping like { "src/App.tsx": "export function App() {...}" } or raw code text.'></textarea>
+                    </div>
+
+                    <div class="inline-grid">
+                        <div class="field">
+                            <label for="api-docs">API docs</label>
+                            <textarea id="api-docs" rows="7" placeholder="Paste OpenAPI or endpoint contract details."></textarea>
+                        </div>
+
+                        <div class="field">
+                            <label for="test-plan">Test plan</label>
+                            <textarea id="test-plan" rows="7" placeholder="Define priority paths, edge cases, and validation strategy."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Execution summary</div>
+                </div>
+
+                <div class="summary-box">
+                    <h3>AI confidence overview</h3>
+                    <p id="summary-copy">No active validation run yet. Add your requirements and source code, then trigger execution to generate an analysis report.</p>
+                </div>
+
+                <div style="margin-top: 18px;">
+                    <div class="section-note">Live activity</div>
+                    <div id="log-stream" style="margin-top: 8px;"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Human-in-the-Loop Review Queue Panel -->
+        <section class="human-review-panel" id="human-review-section" style="display: none;">
+            <div class="panel-header" style="margin-bottom: 8px;">
+                <div class="panel-title" style="color: #c084fc;">Human-in-the-Loop Review Queue</div>
+            </div>
+            <div class="section-note">Low-confidence repairs (&lt; 75% confidence threshold) require developer verification before deployment.</div>
+            <div id="human-review-items"></div>
+        </section>
+
+        <!-- Result Matrix Panel -->
+        <section class="panel" style="margin-top: 20px;">
+            <div class="panel-header">
+                <div class="panel-title">Result matrix</div>
+            </div>
+            <div class="result-list" id="test-results">
+                <div class="empty-state">No checks have been generated yet. Your QA results will appear here after a run begins.</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal-overlay" id="history-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 style="margin: 0;">Execution Run History</h3>
+                <button class="close-btn" onclick="closeHistoryModal()">&times;</button>
+            </div>
+            <div id="history-list">Loading runs...</div>
+        </div>
+    </div>
+
+    <script>
+        let ws;
+        let currentRunData = null;
+
+        const demoState = {
+            requirements: `Validate an e-commerce checkout and authentication flow. Ensure users can log in, add items to the cart, validate the cart total, submit shipping details, and complete payment without critical UX or API errors.`,
+            source_code: JSON.stringify({
+                'src/App.tsx': 'export default function App() { return <div className="app">Welcome</div>; }',
+                'src/pages/Login.tsx': 'export default function Login() { return <form><input data-testid="email" /><button>Login</button></form>; }',
+                'src/pages/Checkout.tsx': 'export default function Checkout() { const [address, setAddress] = useState({}); return <form><input data-testid="street" /><button>Place Order</button></form>; }'
+            }, null, 2),
+            api_docs: `openapi: 3.0.0\ninfo:\n  title: Demo Commerce API\n  version: 1.0.0\npaths:\n  /api/login:\n    post:\n      responses:\n        '200':\n          description: Success\n  /api/checkout:\n    post:\n      responses:\n        '200':\n          description: Order created`,
+            test_plan: 'Focus on critical flows: authentication, cart validation, shipping form validation, payment success, and common edge conditions.'
+        };
+
+        function updateStepper(stepName) {
+            const steps = ['init', 'generate', 'execute', 'analyze', 'heal', 'report'];
+            const stepMap = {
+                'init': 0,
+                'test_generation': 1, 'generate_tests': 1,
+                'test_execution': 2, 'execute_tests': 2,
+                'failure_analysis': 3, 'analyze_failures': 3,
+                'self_healing': 4, 'self_heal': 4,
+                'human_review': 4,
+                'explainability': 5, 'explain': 5, 'completed': 5
+            };
+
+            const idx = stepMap[stepName] !== undefined ? stepMap[stepName] : 0;
+            document.getElementById('active-step-name').innerText = stepName.replace('_', ' ').toUpperCase();
+
+            steps.forEach((s, i) => {
+                const el = document.getElementById(`step-${s}`);
+                if (!el) return;
+                if (i < idx) {
+                    el.className = 'step-item completed';
+                } else if (i === idx) {
+                    el.className = 'step-item active';
+                } else {
+                    el.className = 'step-item';
+                }
+            });
+        }
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const url = `${protocol}//${window.location.host}/ws`;
+            ws = new WebSocket(url);
+
+            ws.onopen = () => {
+                log('WebSocket connected', 'info');
+                document.getElementById('ws-status').style.borderColor = 'rgba(34, 197, 94, 0.5)';
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'run_started') {
+                    log(`Run started: ${data.run_id}`, 'info');
+                    updateStepper('generate_tests');
+                } else if (data.type === 'step_changed') {
+                    log(`Stage: ${data.message || data.step}`, 'info');
+                    updateStepper(data.step);
+                } else if (data.type === 'run_completed') {
+                    log(`Run completed: ${data.run_id}`, 'success');
+                    updateStepper('completed');
+                    updateMetrics(data.summary);
+                    if (data.tests) renderResults(data.tests);
+                    if (data.human_review_queue) renderHumanReviewQueue(data.human_review_queue);
+                } else if (data.type === 'review_updated') {
+                    log(`Review action submitted for ${data.test_id}`, 'success');
+                    updateMetrics(data.summary);
+                    if (data.tests) renderResults(data.tests);
+                    if (data.human_review_queue) renderHumanReviewQueue(data.human_review_queue);
+                } else if (data.type === 'run_failed') {
+                    log(`Run failed: ${data.error}`, 'error');
+                }
+            };
+
+            ws.onclose = () => {
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        function log(msg, type = 'info') {
+            const stream = document.getElementById('log-stream');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">[${time}]</span><span class="log-${type}">${msg}</span>`;
+            stream.appendChild(entry);
+            stream.scrollTop = stream.scrollHeight;
+        }
+
+        function updateMetrics(summary) {
+            const total = summary.total || 0;
+            const passed = summary.passed || 0;
+            const failed = summary.failed || 0;
+            const healed = summary.healed || 0;
+            const review = summary.needs_review || 0;
+
+            document.getElementById('total-tests').innerText = total;
+            document.getElementById('passed-tests').innerText = passed;
+            document.getElementById('failed-tests').innerText = failed;
+            document.getElementById('healed-tests').innerText = healed;
+            document.getElementById('review-tests').innerText = review;
+
+            const rate = total > 0 ? Math.round(((passed + healed) / total) * 100) : 0;
+            document.getElementById('pass-rate').innerText = `${rate}%`;
+        }
+
+        function populateFields(values) {
+            document.getElementById('requirements').value = values.requirements || '';
+            document.getElementById('source-code').value = values.source_code || '';
+            document.getElementById('api-docs').value = values.api_docs || '';
+            document.getElementById('test-plan').value = values.test_plan || '';
+        }
+
+        function loadDemoData() {
+            populateFields(demoState);
+            log('Sample project loaded', 'info');
+        }
+
+        function clearInputs() {
+            populateFields({ requirements: '', source_code: '', api_docs: '', test_plan: '' });
+            document.getElementById('summary-copy').textContent = 'No active validation run yet. Add your requirements and source code, then trigger execution to generate an analysis report.';
+            document.getElementById('test-results').innerHTML = '<div class="empty-state">No checks have been generated yet. Your QA results will appear here after a run begins.</div>';
+            document.getElementById('human-review-section').style.display = 'none';
+            updateStepper('init');
+            log('Inputs reset', 'info');
+        }
+
+        function parseSourceCodeInput(rawText) {
+            const text = (rawText || '').trim();
+            if (!text) return {};
+            try {
+                const parsed = JSON.parse(text);
+                if (parsed && typeof parsed === 'object') return parsed;
+            } catch (error) {}
+            return { 'app/source.py': text };
+        }
+
+        function toggleTestDetails(testId) {
+            const el = document.getElementById(`details-${testId}`);
+            if (!el) return;
+            el.classList.toggle('open');
+        }
+
+        function renderResults(tests) {
+            const container = document.getElementById('test-results');
+            if (!tests || tests.length === 0) {
+                container.innerHTML = '<div class="empty-state">No checks have been generated yet. Your QA results will appear here after a run begins.</div>';
+                return;
+            }
+
+            container.innerHTML = tests.map(test => `
+                <div class="result-item ${test.status}">
+                    <div class="result-item-header" onclick="toggleTestDetails('${test.id}')">
+                        <div>
+                            <div class="result-name">▶ ${test.name || test.id}</div>
+                            <div class="result-meta">${test.id} • ${test.type ? test.type.toUpperCase() : 'AUTO'}</div>
+                        </div>
+                        <span class="badge ${test.status}">${test.status}</span>
+                    </div>
+                    <div class="test-details" id="details-${test.id}">
+                        <div><strong>Description:</strong> ${test.description || 'N/A'}</div>
+                        ${test.steps ? `<div><strong>Steps:</strong><ul style="margin: 4px 0; padding-left: 20px;">${test.steps.map(s => `<li>${s}</li>`).join('')}</ul></div>` : ''}
+                        <div><strong>Expected Result:</strong> ${test.expected_result || 'Pass'}</div>
+                        ${test.screenshot_path ? `<div style="margin: 8px 0;"><strong>Screenshot Artifact:</strong><br/><img src="/${test.screenshot_path}" alt="Test Screenshot" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border); margin-top: 4px;" /></div>` : ''}
+                        ${test.trace_path ? `<div style="margin: 8px 0;"><strong>Playwright Trace Artifact:</strong> <a href="/${test.trace_path}" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: underline;">📦 Download Trace (.zip)</a></div>` : ''}
+                        ${test.video_path ? `<div style="margin: 8px 0;"><strong>Recorded Execution Video:</strong><br/><video controls style="max-width: 100%; border-radius: 8px; border: 1px solid var(--border); margin-top: 4px;"><source src="/${test.video_path}" type="video/webm"></video></div>` : ''}
+                        <div><strong>Generated Test Code:</strong></div>
+                        <pre class="code-view">${escapeHtml(test.code || '# Code unavailable')}</pre>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderHumanReviewQueue(queue) {
+            const section = document.getElementById('human-review-section');
+            const container = document.getElementById('human-review-items');
+
+            if (!queue || queue.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            container.innerHTML = queue.map(item => {
+                const heal = item.heal_result || {};
+                const origCode = heal.original_code || '';
+                const fixCode = heal.fixed_code || '';
+
+                return `
+                    <div class="human-review-card">
+                        <div class="review-header">
+                            <span class="review-title">⚠️ Test ${item.test_id} - ${item.reason}</span>
+                            <span class="badge needs_review">Priority: ${item.priority || 'medium'}</span>
+                        </div>
+                        <div><strong>Code Repair Diff:</strong></div>
+                        <pre class="code-diff-box"><span class="diff-removed">- ${escapeHtml(origCode)}</span>\n<span class="diff-added">+ ${escapeHtml(fixCode)}</span></pre>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button class="btn-reject" onclick="submitReviewAction('${item.test_id}', 'reject')">Reject Fix</button>
+                            <button class="btn-approve" onclick="submitReviewAction('${item.test_id}', 'approve')">Approve Fix</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function submitReviewAction(testId, action) {
+            try {
+                log(`Submitting ${action} for ${testId}...`, 'info');
+                const resp = await fetch('/api/v1/tests/review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        test_id: testId,
+                        action: action,
+                        notes: `Manual ${action} via Dashboard UI`
+                    })
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    log(`Action ${action} recorded successfully!`, 'success');
+                } else {
+                    log(`Failed: ${data.detail}`, 'error');
+                }
+            } catch (err) {
+                log(`Error: ${err.message}`, 'error');
+            }
+        }
+
+        function renderSummary(data) {
+            const summary = data.summary || {};
+            const total = summary.total || 0;
+            const passed = summary.passed || 0;
+            const failed = summary.failed || 0;
+            const healed = summary.healed || 0;
+            const review = summary.needs_review || 0;
+
+            const summaryText = total > 0
+                ? `The validation run generated ${total} checks with ${passed} passing, ${failed} failing, ${healed} auto-healed, and ${review} requiring review.`
+                : 'No results produced yet.';
+
+            document.getElementById('summary-copy').textContent = summaryText;
+        }
+
+        async function triggerRun() {
+            const requirements = document.getElementById('requirements').value.trim();
+            const sourceCode = document.getElementById('source-code').value.trim();
+            const apiDocs = document.getElementById('api-docs').value.trim();
+            const testPlan = document.getElementById('test-plan').value.trim();
+
+            if (!requirements || !sourceCode) {
+                log('Requirements and source code are required before validation can begin.', 'error');
+                return;
+            }
+
+            log('Starting AI validation workflow...', 'info');
+            updateStepper('generate_tests');
+
+            try {
+                const response = await fetch('/api/v1/tests/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        requirements,
+                        source_code: parseSourceCodeInput(sourceCode),
+                        api_docs: apiDocs || undefined,
+                        test_plan: testPlan || undefined,
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    log(`Request failed: ${data.detail || 'Unknown API error'}`, 'error');
+                    updateStepper('init');
+                    return;
+                }
+
+                currentRunData = data;
+                renderSummary(data);
+                renderResults(data.tests || []);
+                renderHumanReviewQueue(data.human_review_queue || []);
+                log(`Validation run finished: ${data.run_id}`, 'success');
+                updateStepper('completed');
+            } catch (error) {
+                log(`Request error: ${error.message}`, 'error');
+                updateStepper('init');
+            }
+        }
+
+        async function openHistoryModal() {
+            document.getElementById('history-modal').classList.add('open');
+            try {
+                const resp = await fetch('/api/v1/runs');
+                const runs = await resp.json();
+                const container = document.getElementById('history-list');
+                if (!runs || runs.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No past runs recorded in this session.</div>';
+                    return;
+                }
+                container.innerHTML = runs.map(r => `
+                    <div style="padding: 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>${r.run_id}</strong>
+                            <div class="result-meta">${new Date(r.timestamp).toLocaleString()}</div>
+                        </div>
+                        <div>Total: ${r.summary?.total || 0} | Passed: ${r.summary?.passed || 0} | Healed: ${r.summary?.healed || 0}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                document.getElementById('history-list').innerText = 'Failed to load run history.';
+            }
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('history-modal').classList.remove('open');
+        }
+
+        function exportReport() {
+            if (!currentRunData) {
+                alert('No active run data available to export. Trigger a run first!');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(currentRunData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `report-${currentRunData.run_id || 'export'}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            log('Report exported as JSON file.', 'success');
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        connectWebSocket();
+        loadDemoData();
+    </script>
+</body>
+</html>
